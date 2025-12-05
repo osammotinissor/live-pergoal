@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Tabella dal Google Sheet – Live</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+  <style>
+    body { font-family: Arial, sans-serif; margin: 16px; }
+    table.dataTable thead th { 
+      position: sticky; 
+      top: 0; 
+      background: white; 
+      z-index: 2; 
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>Tabella live dal Google Sheet</h2>
+    <p id="status">Caricamento dati…</p>
+    <table id="sheetTable" class="display" style="width:100%">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- jQuery + DataTables JS -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+  <script>
+  (function(){
+
+    // 🔧 METTI QUI L'URL DELLA WEB APP APPS SCRIPT
+    var API_URL = "https://script.google.com/macros/s/AKfycbzsOt3qpVNsmrgulWRMRa3eNjjVyTQ9rtJqKHcLok7DaqkqVb5zYHZqRpZ6Rdtd8TTB/exec";
+
+    function setStatus(msg) {
+      document.getElementById("status").innerText = msg;
+    }
+
+    var url = API_URL + "?callback=?";
+
+    $.ajax({
+      url: url,
+      dataType: "jsonp",
+      timeout: 20000,
+      success: function(data) {
+        if (!data || !data.length) {
+          setStatus("Nessun dato disponibile.");
+          return;
+        }
+
+        setStatus("Dati caricati.");
+
+        var keys = Object.keys(data[0]);
+
+        // genera l’header
+        var thead = "<tr>" + keys.map(k => "<th>" + k + "</th>").join("") + "</tr>";
+        $("#sheetTable thead").html(thead);
+
+        // DataTable
+        $("#sheetTable").DataTable({
+          data: data,
+          columns: keys.map(k => ({ data: k })),
+          pageLength: 25,
+          lengthMenu: [10, 25, 50, 100],
+          scrollX: true,
+          scrollY: "70vh",
+          scrollCollapse: true,
+          deferRender: true,
+          order: [],
+          language: {
+            search: "Cerca:",
+            lengthMenu: "Mostra _MENU_ righe",
+            info: "Righe _START_ - _END_ di _TOTAL_",
+            paginate: { previous: "Prev", next: "Next" },
+            zeroRecords: "Nessun risultato"
+          }
+        });
+
+        setStatus("Tabella aggiornata: " + new Date().toLocaleString());
+      },
+      error: function(xhr, status, err) {
+        setStatus("Errore nel caricamento: " + status + " — " + err);
+      }
+    });
+
+  })();
+  </script>
+
+</body>
+</html>
