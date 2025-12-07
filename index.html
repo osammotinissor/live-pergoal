@@ -19,14 +19,14 @@
       background-color: #f5f5dc !important;
     }
 
-    /* sfondo uniforme tabella + header */
+    /* sfondo uniforme tabella + celle + intestazioni */
     table.dataTable,
     table.dataTable tbody td,
     table.dataTable thead th {
       background-color: #f5f5dc !important;
     }
 
-    /* sfondo anche alle colonne fissate */
+    /* sfondo anche per colonne fissate */
     .dtfc-fixed-left,
     .dtfc-fixed-left tbody tr td,
     .dtfc-fixed-left thead tr th {
@@ -149,26 +149,32 @@
               if (chiIndex >= 0) $("td", row).eq(chiIndex).addClass("max-value");
             }
 
-            // FORMATTZIONE INTEGRATA
+            // FORMATTZIONE CELLE
             $('td', row).each(function(i) {
                 const colKey = keys[i];
+                const cellValue = Number(rowData[colKey]);
 
-                // escludi tot e chi
-                if (colKey !== "tot" && colKey !== "chi") {
+                // prime due colonne: beige sempre
+                if (i < 2) {
+                    $(this).css("background-color", "#f5f5dc");
+                    return;
+                }
 
-                    $(this).css("text-align", "center");
+                // testo centrato
+                $(this).css("text-align", "center");
 
-                    const cellValue = Number(rowData[colKey]);
+                // colori 1 e 2 (che sovrascrivono lo sfondo beige)
+                if (cellValue === 1) {
+                    $(this).css("background-color", "#d9ecff");   // azzurro chiaro
+                } else if (cellValue === 2) {
+                    $(this).css("background-color", "#a9d4ff");   // azzurro scuro
+                } else {
+                    // per tutti gli altri valori → beige
+                    $(this).css("background-color", "#f5f5dc");
 
-                    if (cellValue === 1) {
-                        $(this).css("background-color", "#d9ecff");
-                    } else if (cellValue === 2) {
-                        $(this).css("background-color", "#a9d4ff");
-                    } else {
-                        $(this).css("background-color", "#f5f5dc");
-                        if (cellValue === 0) {
-                            $(this).css("color", "gray");
-                        }
+                    // valore 0 → testo grigio
+                    if (cellValue === 0) {
+                        $(this).css("color", "gray");
                     }
                 }
             });
