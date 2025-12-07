@@ -91,6 +91,17 @@
           });
         });
 
+        // filtra righe valide: tot deve essere un numero
+        data = data.filter(row => {
+          var val = Number(row["tot"]);
+          return !isNaN(val);
+        });
+
+        if (data.length === 0) {
+          setStatus("Nessuna riga valida da visualizzare.");
+          return;
+        }
+
         // crea header
         var thead = "<tr>" + keys.map(k => "<th>" + k + "</th>").join("") + "</tr>";
         $("#sheetTable thead").html(thead);
@@ -108,7 +119,7 @@
             title: k
           })),
 
-          pageLength: 50,
+          pageLength: 25,
           lengthMenu: [10, 25, 50, 100],
           scrollX: true,
           scrollY: "70vh",
@@ -164,3 +175,4 @@
 
 </body>
 </html>
+
