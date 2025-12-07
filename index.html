@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
 
   <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;600&display=swap" rel="stylesheet">
 
   <!-- DataTables CSS -->
   <link rel="stylesheet" 
@@ -17,7 +17,7 @@
   <style>
     body {
       font-family: "Montserrat", sans-serif;
-      margin: 16px;
+      margin: 12px;
     }
 
     /* header fisso */
@@ -130,11 +130,12 @@
             // evidenziamento TOT
             if (Number(rowData["tot"]) === maxTot) {
               $("td", row).eq(keys.indexOf("tot")).addClass("max-value");
-            }
+            // grassetto per CHI corrispondente
+              $("td", row).eq(keys.indexOf("chi")).addClass("max-value");}
 
             // evidenziamento CHI
-            if (Number(rowData["chi"]) === maxChi) {
-              $("td", row).eq(keys.indexOf("chi")).addClass("max-value");
+          //  if (Number(rowData["chi"]) === maxChi) {
+          //    $("td", row).eq(keys.indexOf("chi")).addClass("max-value");
             }
           },
 
