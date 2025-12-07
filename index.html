@@ -5,17 +5,38 @@
   <title>live dal pronosticone</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
 
-  <!-- DataTables CSS -->
+  <!-- Google Font: Montserrat -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <!-- DataTables CSS + FixedColumns -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
 
   <style>
-    body { font-family: Arial, sans-serif; margin: 16px; }
+    body { 
+      font-family: 'Montserrat', sans-serif; 
+      margin: 16px; 
+    }
+
     table.dataTable thead th {
       position: sticky;
       top: 0;
       background: white;
-      z-index: 2;
+      z-index: 3;
     }
+
+    /* Spaziatura minima */
+    table.dataTable tbody td {
+      padding: 2px 4px !important;
+      line-height: 1.1em;
+    }
+
+    /* Evidenziazione punteggi migliori */
+    .highlight-top {
+      font-weight: 600 !important;
+      color: #0055ff !important;
+    }
+
     .container { max-width: 1400px; margin: 0 auto; }
   </style>
 </head>
@@ -24,7 +45,7 @@
   <div class="container">
     <h2>live dal pronosticone</h2>
     <p id="status">Caricamento dati…</p>
-    <table id="sheetTable" class="display" style="width:100%">
+    <table id="sheetTable" class="display nowrap" style="width:100%">
       <thead></thead>
       <tbody></tbody>
     </table>
@@ -33,11 +54,11 @@
   <!-- jQuery + DataTables JS -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
 
   <script>
   (function(){
 
-    // 🔧 URL DELLA WEB APP
     var API_URL = "https://script.google.com/macros/s/AKfycbzsOt3qpVNsmrgulWRMRa3eNjjVyTQ9rtJqKHcLok7DaqkqVb5zYHZqRpZ6Rdtd8TTB/exec";
 
     function setStatus(msg) {
@@ -51,6 +72,7 @@
       dataType: "jsonp",
       timeout: 20000,
       success: function(data) {
+
         if (!data || !data.length) {
           setStatus("Nessun dato disponibile.");
           return;
@@ -58,42 +80,56 @@
 
         setStatus("Dati caricati.");
 
-        // 🔥 Trova tutte le colonne presenti in qualsiasi riga
+        // Colonne complete
         var keys = [...new Set(data.flatMap(row => Object.keys(row)))];
 
-        // 🔥 Fix: DataTables non deve interpretare i punti come oggetti
-        $.fn.dataTable.ext.internal._fnGetObjectDataFn = function (dataKey) {
-          return function (row) {
-            return row[dataKey];
-          };
+        // Fix DataTables dotted notation
+        $.fn.dataTable.ext.internal._fnGetObjectDataFn = function (key) {
+          return function (row) { return row[key]; };
         };
 
-        // genera l’header
-        var thead = "<tr>" + keys.map(k => "<th>" + k + "</th>").join("") + "</tr>";
-        $("#sheetTable thead").html(thead);
+        // Header
+        $("#sheetTable thead").html(
+          "<tr>" + keys.map(k => "<th>" + k + "</th>").join("") + "</tr>"
+        );
+
+        // Cerca il valore massimo della colonna "tot"
+        let maxTot = Math.max(...data.map(r => Number(r["tot"]) || 0));
 
         // DataTable
-        $("#sheetTable").DataTable({
+        var table = $("#sheetTable").DataTable({
           data: data,
           columns: keys.map(k => ({ data: k, defaultContent: "" })),
           pageLength: 25,
-          lengthMenu: [10, 25, 50, 100],
           scrollX: true,
           scrollY: "70vh",
           scrollCollapse: true,
           deferRender: true,
           order: [],
+          fixedColumns: {
+            leftColumns: 2  // congelamento prime due colonne
+          },
           language: {
             search: "Cerca:",
             lengthMenu: "Mostra _MENU_ righe",
             info: "Righe _START_ - _END_ di _TOTAL_",
             paginate: { previous: "Prev", next: "Next" },
             zeroRecords: "Nessun risultato"
+          },
+
+          // Evidenziazione top scorer
+          createdRow: function(row, rowData, dataIndex) {
+            if (Number(rowData["tot"]) === maxTot) {
+              // colonna 0 = tot, colonna 1 = chi
+              $("td:eq(0)", row).addClass("highlight-top");
+              $("td:eq(1)", row).addClass("highlight-top");
+            }
           }
         });
 
         setStatus("Tabella aggiornata: " + new Date().toLocaleString());
       },
+
       error: function(xhr, status, err) {
         setStatus("Errore nel caricamento: " + status + " — " + err);
       }
