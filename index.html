@@ -9,10 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;600&display=swap" rel="stylesheet">
 
   <!-- DataTables CSS -->
-  <link rel="stylesheet" 
-    href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-  <link rel="stylesheet"
-    href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
 
   <style>
     body {
@@ -51,7 +49,7 @@
 
 <body>
   <div class="container">
-    <h2>live pronosticone</h2>
+    <h2>live dal pronosticone</h2>
     <p id="status">Caricamento dati…</p>
     <table id="sheetTable" class="display stripe" style="width:100%">
       <thead></thead>
@@ -67,17 +65,14 @@
   <script>
   (function(){
 
-    // URL tua WebApp Apps Script
     var API_URL = "https://script.google.com/macros/s/AKfycbzsOt3qpVNsmrgulWRMRa3eNjjVyTQ9rtJqKHcLok7DaqkqVb5zYHZqRpZ6Rdtd8TTB/exec";
 
     function setStatus(msg) {
       document.getElementById("status").innerText = msg;
     }
 
-    var url = API_URL + "?callback=?";
-
     $.ajax({
-      url: url,
+      url: API_URL + "?callback=?",
       dataType: "jsonp",
       timeout: 20000,
       success: function(data) {
@@ -88,7 +83,7 @@
 
         setStatus("Dati caricati.");
 
-        // recupera TUTTE le chiavi da tutte le righe
+        // ricava tutte le chiavi
         var keys = [];
         data.forEach(row => {
           Object.keys(row).forEach(k => {
@@ -100,12 +95,11 @@
         var thead = "<tr>" + keys.map(k => "<th>" + k + "</th>").join("") + "</tr>";
         $("#sheetTable thead").html(thead);
 
-        // trova il valore massimo del campo TOT
+        // trova valore massimo TOT
         let maxTot = Math.max(...data.map(r => Number(r["tot"]) || 0));
-        let maxChi = Math.max(...data.map(r => Number(r["chi"]) || 0));
 
         // DataTable
-        var table = $("#sheetTable").DataTable({
+        $("#sheetTable").DataTable({
           data: data,
           columns: keys.map(k => ({
             data: function(row) {
@@ -121,22 +115,16 @@
           scrollCollapse: true,
           deferRender: true,
           order: [],
+          fixedColumns: { leftColumns: 2 },
 
-          fixedColumns: {
-            leftColumns: 2
-          },
-
-         createdRow: function(row, rowData) {
-    // evidenziamento TOT
-    if (Number(rowData["tot"]) === maxTot) {
-        // grassetto per TOT
-        $("td", row).eq(keys.indexOf("tot")).addClass("max-value");
-        
-        // grassetto per CHI corrispondente
-        $("td", row).eq(keys.indexOf("chi")).addClass("max-value");
-    }
-}
-
+          createdRow: function(row, rowData) {
+            // evidenzia TOT massimo e CHI corrispondente
+            if (Number(rowData["tot"]) === maxTot) {
+              var totIndex = keys.indexOf("tot");
+              var chiIndex = keys.indexOf("chi");
+              if (totIndex >= 0) $("td", row).eq(totIndex).addClass("max-value");
+              if (chiIndex >= 0) $("td", row).eq(chiIndex).addClass("max-value");
+            }
           },
 
           language: {
