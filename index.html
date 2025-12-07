@@ -92,10 +92,7 @@
         });
 
         // filtra righe valide: tot deve essere un numero
-        data = data.filter(row => {
-          var val = Number(row["tot"]);
-          return !isNaN(val);
-        });
+        data = data.filter(row => row["tot"] !== "---");
 
         if (data.length === 0) {
           setStatus("Nessuna riga valida da visualizzare.");
