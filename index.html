@@ -51,7 +51,7 @@
 
 <body>
   <div class="container">
-    <h2>live dal pronosticone</h2>
+    <h2>live pronosticone</h2>
     <p id="status">Caricamento dati…</p>
     <table id="sheetTable" class="display stripe" style="width:100%">
       <thead></thead>
@@ -126,17 +126,17 @@
             leftColumns: 2
           },
 
-          createdRow: function(row, rowData) {
-            // evidenziamento TOT
-            if (Number(rowData["tot"]) === maxTot) {
-              $("td", row).eq(keys.indexOf("tot")).addClass("max-value");
-            // grassetto per CHI corrispondente
-              $("td", row).eq(keys.indexOf("chi")).addClass("max-value");}
+         createdRow: function(row, rowData) {
+    // evidenziamento TOT
+    if (Number(rowData["tot"]) === maxTot) {
+        // grassetto per TOT
+        $("td", row).eq(keys.indexOf("tot")).addClass("max-value");
+        
+        // grassetto per CHI corrispondente
+        $("td", row).eq(keys.indexOf("chi")).addClass("max-value");
+    }
+}
 
-            // evidenziamento CHI
-          //  if (Number(rowData["chi"]) === maxChi) {
-          //    $("td", row).eq(keys.indexOf("chi")).addClass("max-value");
-            }
           },
 
           language: {
