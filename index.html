@@ -16,7 +16,7 @@
     body {
       font-family: "Montserrat", sans-serif;
       margin: 12px;
-      background-color: #f5f5dc !important;
+      background-color: #ffffff !important;
     }
 
     /* header fisso */
@@ -92,7 +92,7 @@
           });
         });
 
-        // filtra righe valide: tot deve essere un numero
+        // filtra righe: esclude solo tot === "---"
         data = data.filter(row => row["tot"] !== "---");
 
         if (data.length === 0) {
@@ -127,7 +127,8 @@
           fixedColumns: { leftColumns: 2 },
 
           createdRow: function(row, rowData) {
-            // evidenzia TOT massimo e CHI corrispondente
+
+            // evidenzia TOT massimo + CHI
             if (Number(rowData["tot"]) === maxTot) {
               var totIndex = keys.indexOf("tot");
               var chiIndex = keys.indexOf("chi");
@@ -135,19 +136,28 @@
               if (chiIndex >= 0) $("td", row).eq(chiIndex).addClass("max-value");
             }
 
-            // formattazione condizionale per tutte le altre colonne (eccetto prime due)
-            $("td", row).each(function(i){
-              if (i < 2) return; // salta prime due colonne
-              $(this).css("text-align", "center"); // testo centrato
+            // FORMATTZIONE INTEGRATA
+            $('td', row).each(function(i) {
+                const colKey = keys[i];
 
-              var val = Number($(this).text());
-              if (val === 0) {
-                $(this).css("color", "gray");
-              } else if (val === 1) {
-                $(this).css("background-color", "#cce5ff"); // azzurro chiaro
-              } else if (val === 2) {
-                $(this).css("background-color", "#66b3ff"); // azzurro più marcato
-              }
+                // escludi tot e chi
+                if (colKey !== "tot" && colKey !== "chi") {
+
+                    $(this).css("text-align", "center");
+
+                    const cellValue = Number(rowData[colKey]);
+
+                    if (cellValue === 1) {
+                        $(this).css("background-color", "#d9ecff");
+                    } else if (cellValue === 2) {
+                        $(this).css("background-color", "#a9d4ff");
+                    } else {
+                        $(this).css("background-color", "#f5f5fdc");
+                        if (cellValue === 0) {
+                            $(this).css("color", "gray");
+                        }
+                    }
+                }
             });
           },
 
@@ -173,4 +183,3 @@
 
 </body>
 </html>
-
