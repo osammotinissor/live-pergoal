@@ -99,7 +99,12 @@
         // DataTable
         var table = $("#sheetTable").DataTable({
           data: data,
-          columns: keys.map(k => ({ data: k, defaultContent: "" })),
+          columns: keys.map(k => ({
+            data: function(row) {
+              return row[k];   // <-- prende esattamente la chiave, anche con "." dentro
+            },
+            title: k
+          })),
           pageLength: 25,
           scrollX: true,
           scrollY: "70vh",
