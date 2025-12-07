@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   <title>live dal pronosticone</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  
+
   <!-- DataTables CSS -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
   <style>
     body { font-family: Arial, sans-serif; margin: 16px; }
-    table.dataTable thead th { 
-      position: sticky; 
-      top: 0; 
-      background: white; 
-      z-index: 2; 
+    table.dataTable thead th {
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 2;
     }
     .container { max-width: 1400px; margin: 0 auto; }
   </style>
@@ -37,7 +37,7 @@
   <script>
   (function(){
 
-    // 🔧 METTI QUI L'URL DELLA WEB APP APPS SCRIPT
+    // 🔧 URL DELLA WEB APP
     var API_URL = "https://script.google.com/macros/s/AKfycbzsOt3qpVNsmrgulWRMRa3eNjjVyTQ9rtJqKHcLok7DaqkqVb5zYHZqRpZ6Rdtd8TTB/exec";
 
     function setStatus(msg) {
@@ -58,7 +58,15 @@
 
         setStatus("Dati caricati.");
 
-        var keys = Object.keys(data[0]);
+        // 🔥 Trova tutte le colonne presenti in qualsiasi riga
+        var keys = [...new Set(data.flatMap(row => Object.keys(row)))];
+
+        // 🔥 Fix: DataTables non deve interpretare i punti come oggetti
+        $.fn.dataTable.ext.internal._fnGetObjectDataFn = function (dataKey) {
+          return function (row) {
+            return row[dataKey];
+          };
+        };
 
         // genera l’header
         var thead = "<tr>" + keys.map(k => "<th>" + k + "</th>").join("") + "</tr>";
@@ -67,7 +75,7 @@
         // DataTable
         $("#sheetTable").DataTable({
           data: data,
-          columns: keys.map(k => ({ data: k })),
+          columns: keys.map(k => ({ data: k, defaultContent: "" })),
           pageLength: 25,
           lengthMenu: [10, 25, 50, 100],
           scrollX: true,
