@@ -16,14 +16,27 @@
     body {
       font-family: "Montserrat", sans-serif;
       margin: 12px;
-      background-color: #f5f5dc!important;
+      background-color: #f5f5dc !important;
+    }
+
+    /* sfondo uniforme tabella + header */
+    table.dataTable,
+    table.dataTable tbody td,
+    table.dataTable thead th {
+      background-color: #f5f5dc !important;
+    }
+
+    /* sfondo anche alle colonne fissate */
+    .dtfc-fixed-left,
+    .dtfc-fixed-left tbody tr td,
+    .dtfc-fixed-left thead tr th {
+      background-color: #f5f5dc !important;
     }
 
     /* header fisso */
     table.dataTable thead th {
       position: sticky;
       top: 0;
-      background: white;
       z-index: 2;
     }
     
@@ -132,54 +145,4 @@
             if (Number(rowData["tot"]) === maxTot) {
               var totIndex = keys.indexOf("tot");
               var chiIndex = keys.indexOf("chi");
-              if (totIndex >= 0) $("td", row).eq(totIndex).addClass("max-value");
-              if (chiIndex >= 0) $("td", row).eq(chiIndex).addClass("max-value");
-            }
-
-            // FORMATTZIONE INTEGRATA
-            $('td', row).each(function(i) {
-                const colKey = keys[i];
-
-                // escludi tot e chi
-                if (colKey !== "tot" && colKey !== "chi") {
-
-                    $(this).css("text-align", "center");
-
-                    const cellValue = Number(rowData[colKey]);
-
-                    if (cellValue === 1) {
-                        $(this).css("background-color", "#d9ecff");
-                    } else if (cellValue === 2) {
-                        $(this).css("background-color", "#a9d4ff");
-                    } else {
-                        $(this).css("background-color", "#f5f5fdc");
-                        if (cellValue === 0) {
-                            $(this).css("color", "gray");
-                        }
-                    }
-                }
-            });
-          },
-
-          language: {
-            search: "Cerca:",
-            lengthMenu: "Mostra _MENU_ righe",
-            info: "Righe _START_ - _END_ di _TOTAL_",
-            paginate: { previous: "Prev", next: "Next" },
-            zeroRecords: "Nessun risultato"
-          }
-        });
-
-        setStatus("Tabella aggiornata: " + new Date().toLocaleString());
-      },
-
-      error: function(xhr, status, err) {
-        setStatus("Errore nel caricamento: " + status + " — " + err);
-      }
-    });
-
-  })();
-  </script>
-
-</body>
-</html>
+              if (totIndex >= 0) $("td",
