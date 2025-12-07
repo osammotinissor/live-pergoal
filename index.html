@@ -26,7 +26,7 @@
       z-index: 2;
     }
 
-    /* righe molto compatte */
+    /* righe compatte */
     table.dataTable tbody td {
       padding: 2px 6px !important;
     }
@@ -49,7 +49,7 @@
 
 <body>
   <div class="container">
-    <h2>live dal pronosticone</h2>
+    <h2>live pronosticone</h2>
     <p id="status">Caricamento dati…</p>
     <table id="sheetTable" class="display stripe" style="width:100%">
       <thead></thead>
@@ -108,7 +108,7 @@
             title: k
           })),
 
-          pageLength: 25,
+          pageLength: 50,
           lengthMenu: [10, 25, 50, 100],
           scrollX: true,
           scrollY: "70vh",
@@ -125,6 +125,21 @@
               if (totIndex >= 0) $("td", row).eq(totIndex).addClass("max-value");
               if (chiIndex >= 0) $("td", row).eq(chiIndex).addClass("max-value");
             }
+
+            // formattazione condizionale per tutte le altre colonne (eccetto prime due)
+            $("td", row).each(function(i){
+              if (i < 2) return; // salta prime due colonne
+              $(this).css("text-align", "center"); // testo centrato
+
+              var val = Number($(this).text());
+              if (val === 0) {
+                $(this).css("color", "gray");
+              } else if (val === 1) {
+                $(this).css("background-color", "#cce5ff"); // azzurro chiaro
+              } else if (val === 2) {
+                $(this).css("background-color", "#66b3ff"); // azzurro più marcato
+              }
+            });
           },
 
           language: {
