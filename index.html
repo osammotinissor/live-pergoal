@@ -80,7 +80,6 @@
       document.getElementById("status").innerText = msg;
     }
 
-    // 🔵 funzione che rimuove " (2)" " (3)" ecc.
     function cleanHeader(str) {
       return str.replace(/\s*\(\d+\)$/g, "");
     }
@@ -97,7 +96,6 @@
 
         setStatus("Dati caricati.");
 
-        // ricava tutte le chiavi
         var keys = [];
         data.forEach(row => {
           Object.keys(row).forEach(k => {
@@ -105,7 +103,6 @@
           });
         });
 
-        // filtra righe con tot === "---"
         data = data.filter(row => row["tot"] !== "---");
 
         if (data.length === 0) {
@@ -113,14 +110,11 @@
           return;
         }
 
-        // crea header puliti
         var thead = "<tr>" + keys.map(k => "<th>" + cleanHeader(k) + "</th>").join("") + "</tr>";
         $("#sheetTable thead").html(thead);
 
-        // massimo TOT
         let maxTot = Math.max(...data.map(r => Number(r["tot"]) || 0));
 
-        // DataTable
         $("#sheetTable").DataTable({
           data: data,
           columns: keys.map(k => ({
@@ -141,7 +135,6 @@
 
           createdRow: function(row, rowData) {
 
-            // evidenzia TOT + CHI max
             if (Number(rowData["tot"]) === maxTot) {
               var totIndex = keys.indexOf("tot");
               var chiIndex = keys.indexOf("chi");
@@ -149,43 +142,31 @@
               if (chiIndex >= 0) $("td", row).eq(chiIndex).addClass("max-value");
             }
 
-            // formattazione
             $('td', row).each(function(i) {
-                const colKey = keys[i];
-                const value = rowData[colKey];
-                const num = Number(value);
+              const colKey = keys[i];
+              const value = rowData[colKey];
+              const num = Number(value);
 
-                // prime due colonne sempre beige
-                if (i < 2) {
-                    $(this).css("background-color", "#f5f5dc");
-                    return;
-                }
+              if (i < 2) {
+                  $(this).css("background-color", "#f5f5dc");
+                  return;
+              }
 
-                $(this).css("text-align", "center");
+              $(this).css("text-align", "center");
 
-                if (num === 1) {
-    $(this).css({
-        "font-weight": "bold",
-        "color": "inherit"  // mantiene il colore di default
-    });
-} 
-else if (num === 2) {
-    $(this).css({
-        "font-weight": "bold",
-        "color": "blue"
-    });
-} 
-else {
-    $(this).css({
-        "font-weight": "normal",
-        "color": num === 0 ? "gray" : "inherit"
-    });
-}
+              if (num === 1) {
+                  $(this).css({"font-weight": "bold", "color": "inherit"});
+              } 
+              else if (num === 2) {
+                  $(this).css({"font-weight": "bold", "color": "blue"});
+              } 
+              else {
+                  $(this).css({"font-weight": "normal", "color": num === 0 ? "gray" : "inherit"});
+              }
+            });
 
-                    }
-              
-            );
-          
+          },
+
           language: {
             search: "Cerca:",
             lengthMenu: "Mostra _MENU_ righe",
