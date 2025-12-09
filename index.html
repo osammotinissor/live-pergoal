@@ -114,7 +114,13 @@
         }
 
         // crea header
-        var thead = "<tr>" + keys.map(k => "<th>" + k + "</th>").join("") + "</tr>";
+        var thead = "<tr>" + keys.map(k => {
+  
+        // rimuove suffissi tipo " (2)", " (3)", ecc.
+          var clean = k.replace(/\s*\(\d+\)$/,"");
+
+          return "<th>" + clean + "</th>";
+        }).join("") + "</tr>";
         $("#sheetTable thead").html(thead);
 
         // trova valore massimo TOT
