@@ -164,15 +164,24 @@
                 $(this).css("text-align", "center");
 
                 if (num === 1) {
-                    $(this).css("background-color", "#d9ecff");
-                } 
-                else if (num === 2) {
-                    $(this).css("background-color", "#a9d4ff");
-                } 
-                else {
-                    $(this).css("background-color", "#f5f5dc");
-                    if (num === 0) {
-                        $(this).css("color", "gray");
+    $(this).css({
+        "font-weight": "bold",
+        "color": "inherit"  // mantiene il colore di default
+    });
+} 
+else if (num === 2) {
+    $(this).css({
+        "font-weight": "bold",
+        "color": "blue"
+    });
+} 
+else {
+    $(this).css({
+        "font-weight": "normal",
+        "color": num === 0 ? "gray" : "inherit"
+    });
+}
+
                     }
                 }
             });
