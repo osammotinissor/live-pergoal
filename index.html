@@ -56,14 +56,30 @@
     /* evidenziazione TOT / CHI massimi */
     .max-value {
       font-weight: 700;
-      color: #0066ff;
+      color: #0066ff !important;
     }
+
+    /* colonne 0 e 1 (prime due) sempre beige */
+    td.col-0, td.col-1,
+    /* anche per fixed columns clones */
+    .dtfc-fixed-left td.col-0, .dtfc-fixed-left td.col-1 {
+      background-color: #f5f5dc !important;
+    }
+
+    /* valori 0/1/2 */
+    td.value-0 { color: #888888 !important; }               /* testo grigio per 0 */
+    td.value-1 { background-color: #d9ecff !important; }    /* azzurro chiaro per 1 */
+    td.value-2 { background-color: #a9d4ff !important; }    /* azzurro scuro per 2 */
+
+    /* assicurati che testo centrato sia applicato */
+    td.centered { text-align: center !important; }
+
   </style>
 </head>
 
 <body>
   <div class="container">
-    <h2>live dal pronosticone</h2>
+    <h2>live pronosticone</h2>
     <p id="status">Caricamento dati…</p>
     <table id="sheetTable" class="display stripe" style="width:100%">
       <thead></thead>
@@ -97,13 +113,16 @@
 
         setStatus("Dati caricati.");
 
-        // ricava tutte le chiavi
+        // recupera TUTTE le chiavi da tutte le righe (queste includono i suffissi univoci creati dallo script)
         var keys = [];
         data.forEach(row => {
           Object.keys(row).forEach(k => {
             if (!keys.includes(k)) keys.push(k);
           });
         });
+
+        // crea una versione "pulita" delle intestazioni per la sola visualizzazione (rimuove " (2)", " (3)", ecc.)
+        var displayKeys = keys.map(k => k.replace(/\s*\(\d+\)$/, ""));
 
         // filtra righe: esclude solo tot === "---"
         data = data.filter(row => row["tot"] !== "---");
@@ -113,20 +132,14 @@
           return;
         }
 
-        // crea header
-        var thead = "<tr>" + keys.map(k => {
-  
-        // rimuove suffissi tipo " (2)", " (3)", ecc.
-          var clean = k.replace(/\s*\(\d+\)$/,"");
-
-          return "<th>" + clean + "</th>";
-        }).join("") + "</tr>";
+        // crea header visivo usando displayKeys (ma la DataTable continuerà a usare 'keys' come data property)
+        var thead = "<tr>" + displayKeys.map(k => "<th>" + k + "</th>").join("") + "</tr>";
         $("#sheetTable thead").html(thead);
 
-        // trova valore massimo TOT
+        // trova valore massimo TOT (attenzione: "tot" è uno dei key originali senza suffisso perché lo script GAS normalizza tot/chi)
         let maxTot = Math.max(...data.map(r => Number(r["tot"]) || 0));
 
-        // DataTable
+        // DataTable: usiamo 'keys' come colonne data, ma header già impostato sopra da displayKeys
         $("#sheetTable").DataTable({
           data: data,
           columns: keys.map(k => ({
@@ -147,41 +160,45 @@
 
           createdRow: function(row, rowData) {
 
-            // evidenzia TOT massimo + CHI
-            if (Number(rowData["tot"]) === maxTot) {
-              var totIndex = keys.indexOf("tot");
-              var chiIndex = keys.indexOf("chi");
-              if (totIndex >= 0) $("td", row).eq(totIndex).addClass("max-value");
+            // evidenzia TOT massimo + CHI (usiamo le chiavi reali "tot" e "chi" - lo script GAS ha normalizzato i nomi base)
+            // Per sicurezza cerchiamo l'indice della prima colonna il cui normalized key sia 'tot'/'chi'
+            var totIndex = keys.findIndex(k => k.replace(/\s*\(\d+\)$/, "").trim().toLowerCase() === "tot");
+            var chiIndex = keys.findIndex(k => k.replace(/\s*\(\d+\)$/, "").trim().toLowerCase() === "chi");
+
+            if (totIndex >= 0 && Number(rowData[keys[totIndex]]) === maxTot) {
+              $("td", row).eq(totIndex).addClass("max-value");
               if (chiIndex >= 0) $("td", row).eq(chiIndex).addClass("max-value");
             }
 
-            // FORMATTZIONE CELLE
+            // FORMATTZIONE CELLE: assegniamo classi, non inline style
             $('td', row).each(function(i) {
                 const colKey = keys[i];
-                const cellValue = Number(rowData[colKey]);
+                const rawValue = rowData[colKey];
 
-                // prime due colonne: beige sempre
-                if (i < 2) {
-                    $(this).css("background-color", "#f5f5dc");
-                    return;
-                }
+                // prime due colonne: assegna classe col-0/col-1 (beige)
+                if (i === 0) { $(this).addClass("col-0"); return; }
+                if (i === 1) { $(this).addClass("col-1"); return; }
 
-                // testo centrato
-                $(this).css("text-align", "center");
+                // testo centrato per le colonne da indice >=2
+                $(this).addClass("centered");
 
-                // colori 1 e 2 (che sovrascrivono lo sfondo beige)
-                if (cellValue === 1) {
-                    $(this).css("background-color", "#d9ecff");   // azzurro chiaro
-                } else if (cellValue === 2) {
-                    $(this).css("background-color", "#a9d4ff");   // azzurro scuro
+                // proviamo a interpretare come numero il valore (se è numerico "2" o 2)
+                var cellValue = (rawValue === null || rawValue === undefined) ? NaN : Number(rawValue);
+
+                // rimuoviamo eventuali classi value-* precedenti (utile se DataTable rigenera righe)
+                $(this).removeClass("value-0 value-1 value-2");
+
+                if (!isNaN(cellValue)) {
+                  if (cellValue === 0) {
+                    $(this).addClass("value-0");
+                  } else if (cellValue === 1) {
+                    $(this).addClass("value-1");
+                  } else if (cellValue === 2) {
+                    $(this).addClass("value-2");
+                  }
                 } else {
-                    // per tutti gli altri valori → beige
-                    $(this).css("background-color", "#f5f5dc");
-
-                    // valore 0 → testo grigio
-                    if (cellValue === 0) {
-                        $(this).css("color", "gray");
-                    }
+                  // potrebbe essere una stringa tipo "1-1" (risultato) => lasciamo beige
+                  // ma se il testo è '0'/'1'/'2' come stringa Number('2') è 2 e il ramo sopra lo gestisce
                 }
             });
           },
@@ -192,7 +209,18 @@
             info: "Righe _START_ - _END_ di _TOTAL_",
             paginate: { previous: "Prev", next: "Next" },
             zeroRecords: "Nessun risultato"
+          },
+
+          // Evitiamo che DataTables ricrei header (lo abbiamo già inserito). 
+          // Alcune versioni ignorano la proprietà; se vedi header duplicati, rimuovi questa opzione.
+          initComplete: function() {
+            // sovrascriviamo gli header renderizzati da DataTables con quelli puliti (displayKeys)
+            var ths = $("#sheetTable thead th");
+            ths.each(function(idx){
+              $(this).text(displayKeys[idx]);
+            });
           }
+
         });
 
         setStatus("Tabella aggiornata: " + new Date().toLocaleString());
